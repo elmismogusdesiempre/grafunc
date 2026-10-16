@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio de Funciones</title>
+<style>
+  :root{
+    --bg:#eef2f9;
+    --bg2:#e6ecf7;
+    --panel:#ffffff;
+    --panel-2:#f7f9fd;
+    --text:#151c2c;
+    --muted:#69748c;
+    --border:#e3e9f3;
+    --accent:#4f6ef7;
+    --accent-2:#8b5cf6;
+    --grid:#e6ebf5;
+    --axis:#9aa7bd;
+    --curve:#4f6ef7;
+    --asym:#f59e0b;
+    --pt:#10b981;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 10px 30px rgba(16,24,40,.07);
+  }
+  [data-theme="dark"]{
+    --bg:#0d1220;
+    --bg2:#0a0f1a;
+    --panel:#151c2c;
+    --panel-2:#1b2334;
+    --text:#e9eefb;
+    --muted:#8f9cb5;
+    --border:#26304a;
+    --accent:#6d8bff;
+    --accent-2:#a78bfa;
+    --grid:#1e2740;
+    --axis:#4d5a75;
+    --curve:#6d8bff;
+    --asym:#fbbf24;
+    --pt:#34d399;
+    --shadow:0 1px 2px rgba(0,0,0,.2), 0 10px 30px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(160deg,var(--bg),var(--bg2));
+    color:var(--text);
+    display:flex;flex-direction:column;
+    height:100vh;overflow:hidden;
+    transition:background .3s,color .3s;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 22px 8px;gap:16px;flex:0 0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .logo{
+    width:40px;height:40px;border-radius:12px;flex:0 0 auto;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff;display:grid;place-items:center;
+    font-size:22px;font-weight:700;font-style:italic;
+    box-shadow:0 6px 16px rgba(79,110,247,.35);
+  }
+  .brand h1{font-size:17px;margin:0;letter-spacing:-.01em;}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted);}
+  .icon-btn{
+    width:42px;height:42px;border-radius:12px;cursor:pointer;
+    border:1px solid var(--border);background:var(--panel);
+    font-size:18px;line-height:1;display:grid;place-items:center;
+    box-shadow:var(--shadow);transition:transform .15s,background .2s;
+  }
+  .icon-btn:hover{transform:translateY(-1px);}
+
+  /* ---------- Tabs ---------- */
+  .tabs{
+    display:flex;gap:6px;padding:6px;margin:0 22px 12px;
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:14px;box-shadow:var(--shadow);
+    flex:0 0 auto;width:fit-content;
+  }
+  .tab{
+    border:none;background:transparent;color:var(--muted);
+    font:inherit;font-weight:600;font-size:14px;
+    padding:9px 20px;border-radius:10px;cursor:pointer;
+    transition:all .2s;
+  }
+  .tab:hover{color:var(--text);}
+  .tab.active{
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff;box-shadow:0 4px 14px rgba(79,110,247,.35);
+  }
+
+  /* ---------- Layout ---------- */
+  main{flex:1 1 auto;min-height:0;padding:0 22px 20px;}
+  .panel{display:none;height:100%;gap:16px;grid-template-columns:minmax(0,1fr) 360px;}
+  .panel.active{display:grid;}
+
+  .graph-card{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:18px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;min-width:0;min-height:0;
+    overflow:hidden;
+  }
+  .graph-head{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);
+    flex:0 0 auto;flex-wrap:wrap;
+  }
+  .formula{
+    font-size:19px;font-weight:600;letter-spacing:.01em;
+    color:var(--text);
+  }
+  .formula sup{font-size:.65em;}
+  .formula sub{font-size:.65em;}
+  .hint{font-size:11.5px;color:var(--muted);font-weight:400;}
+  .graph-head .right{display:flex;align-items:center;gap:10px;}
+  .mini-btn{
+    font:inherit;font-size:12px;font-weight:600;
+    border:1px solid var(--border);background:var(--panel-2);
+    color:var(--muted);padding:6px 12px;border-radius:9px;cursor:pointer;
+    transition:all .18s;
+  }
+  .mini-btn:hover{color:var(--accent);border-color:var(--accent);}
+
+  .canvas-wrap{position:relative;flex:1 1 auto;min-height:0;}
+  .canvas-wrap canvas{
+    position:absolute;inset:0;width:100%;height:100%;
+    display:block;touch-action:none;cursor:grab;
+  }
+  .canvas-wrap canvas:active{cursor:grabbing;}
+
+  /* ---------- Side ---------- */
+  .side{
+    display:flex;flex-direction:column;gap:16px;min-height:0;
+  }
+  .card{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:18px;box-shadow:var(--shadow);
+    padding:14px 16px;
+  }
+  .card h2{
+    margin:0 0 12px;font-size:12px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  }
+  .steps-card{
+    flex:1 1 auto;min-height:0;display:flex;flex-direction:column;
+  }
+  .steps{
+    overflow-y:auto;display:flex;flex-direction:column;gap:9px;
+    padding-right:4px;min-height:0;
+  }
+  .steps::-webkit-scrollbar{width:8px;}
+  .steps::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;}
+
+  /* ---------- Sliders ---------- */
+  .sliders{display:flex;flex-direction:column;gap:14px;}
+  .slider-row{display:flex;flex-direction:column;gap:6px;}
+  .slider-label{display:flex;justify-content:space-between;align-items:baseline;}
+  .pname{font-style:italic;font-weight:700;font-size:15px;color:var(--text);}
+  .pval{
+    font-size:13px;font-weight:700;color:var(--accent);
+    background:var(--panel-2);border:1px solid var(--border);
+    padding:2px 10px;border-radius:8px;min-width:52px;text-align:center;
+    font-variant-numeric:tabular-nums;
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:6px;
+    border-radius:6px;outline:none;cursor:pointer;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    opacity:.85;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;
+    width:18px;height:18px;border-radius:50%;
+    background:#fff;border:3px solid var(--accent);
+    box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:grab;
+    transition:transform .15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15);}
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;
+    background:#fff;border:3px solid var(--accent);
+    box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:grab;
+  }
+
+  /* ---------- Steps ---------- */
+  .step{
+    background:var(--panel-2);border:1px solid var(--border);
+    border-left:3px solid var(--accent);
+    border-radius:11px;padding:10px 12px;
+    animation:fade .25s ease;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+  .step h3{
+    margin:0 0 5px;font-size:10.5px;font-weight:800;
+    text-transform:uppercase;letter-spacing:.09em;color:var(--accent);
+  }
+  .step-body{font-size:13.5px;line-height:1.65;color:var(--text);}
+  .step-body b{color:var(--accent);font-weight:700;}
+  .step-body sub,.step-body sup{font-size:.68em;}
+  .step.warn{border-left-color:var(--asym);}
+  .step.warn h3{color:var(--asym);}
+  .step.warn .step-body b{color:var(--asym);}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:920px){
+    body{height:auto;min-height:100vh;overflow:auto;}
+    main{padding-bottom:24px;}
+    .panel.active{grid-template-columns:1fr;height:auto;}
+    .graph-card{height:400px;}
+    .steps-card{max-height:none;}
+    .steps{overflow:visible;}
+    .topbar,.tabs{margin-left:14px;margin-right:14px;}
+    main{padding-left:14px;padding-right:14px;}
+    .brand p{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">ƒ</span>
+    <div>
+      <h1>Laboratorio de Funciones</h1>
+      <p>Explora, grafica y descubre el paso a paso</p>
+    </div>
+  </div>
+  <button id="themeToggle" class="icon-btn" title="Cambiar tema">🌙</button>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="quad" role="tab">Cuadrática</button>
+  <button class="tab" data-tab="exp" role="tab">Exponencial</button>
+  <button class="tab" data-tab="log" role="tab">Logarítmica</button>
+</nav>
+
+<main>
+  <!-- ============ CUADRÁTICA ============ -->
+  <section class="panel active" id="panel-quad">
+    <div class="graph-card">
+      <div class="graph-head">
+        <div class="formula" id="quadFormula"></div>
+        <div class="right">
+          <span class="hint">arrastra para mover · rueda para zoom</span>
+          <button class="mini-btn" data-reset="quad">Reiniciar</button>
+        </div>
+      </div>
+      <div class="canvas-wrap"><canvas id="canvas-quad"></canvas></div>
+    </div>
+    <aside class="side">
+      <div class="card">
+        <h2>Parámetros</h2>
+        <div class="sliders" id="quadSliders"></div>
+      </div>
+      <div class="card steps-card">
+        <h2>Resolución paso a paso</h2>
+        <div class="steps" id="quadSteps"></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ============ EXPONENCIAL ============ -->
+  <section class="panel" id="panel-exp">
+    <div class="graph-card">
+      <div class="graph-head">
+        <div class="formula" id="expFormula"></div>
+        <div class="right">
+          <span class="hint">arrastra para mover · rueda para zoom</span>
+          <button class="mini-btn" data-reset="exp">Reiniciar</button>
+        </div>
+      </div>
+      <div class="canvas-wrap"><canvas id="canvas-exp"></canvas></div>
+    </div>
+    <aside class="side">
+      <div class="card">
+        <h2>Parámetros</h2>
+        <div class="sliders" id="expSliders"></div>
+      </div>
+      <div class="card steps-card">
+        <h2>Resolución paso a paso</h2>
+        <div class="steps" id="expSteps"></div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- ============ LOGARÍTMICA ============ -->
+  <section class="panel" id="panel-log">
+    <div class="graph-card">
+      <div class="graph-head">
+        <div class="formula" id="logFormula"></div>
+        <div class="right">
+          <span class="hint">arrastra para mover · rueda para zoom</span>
+          <button class="mini-btn" data-reset="log">Reiniciar</button>
+        </div>
+      </div>
+      <div class="canvas-wrap"><canvas id="canvas-log"></canvas></div>
+    </div>
+    <aside class="side">
+      <div class="card">
+        <h2>Parámetros</h2>
+        <div class="sliders" id="logSliders"></div>
+      </div>
+      <div class="card steps-card">
+        <h2>Resolución paso a paso</h2>
+        <div class="steps" id="logSteps"></div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* =========================================================
+   UTILIDADES
+   ========================================================= */
+const fmt = n => {
+  if (!Number.isFinite(n)) return '—';
+  let r = Math.round(n * 100) / 100;
+  if (Object.is(r, -0)) r = 0;
+  return r.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+};
+
+const EPS = 1e-9;
+
+/* =========================================================
+   ESTADO
+   ========================================================= */
+const DEFAULTS = {
+  quad: { a: 1, b: -2, c: -3 },
+  exp:  { a: 1, b: 2,  c: 0  },
+  log:  { a: 1, b: 2,  h: 0, k: 0 }
+};
+
+const DEFAULT_VIEWS = {
+  quad: { xMin: -6, xMax: 6, yMin: -6, yMax: 6 },
+  exp:  { xMin: -5, xMax: 5, yMin: -3, yMax: 10 },
+  log:  { xMin: -1, xMax: 10, yMin: -5, yMax: 5 }
+};
+
+const SLIDERS = {
+  quad: [
+    { key: 'a', label: 'a', min: -5, max: 5, step: 0.1 },
+    { key: 'b', label: 'b', min: -10, max: 10, step: 0.1 },
+    { key: 'c', label: 'c', min: -10, max: 10, step: 0.1 }
+  ],
+  exp: [
+    { key: 'a', label: 'a', min: -5, max: 5, step: 0.1 },
+    { key: 'b', label: 'b', min: 0.1, max: 5, step: 0.1 },
+    { key: 'c', label: 'c', min: -10, max: 10, step: 0.1 }
+  ],
+  log: [
+    { key: 'a', label: 'a', min: -5, max: 5, step: 0.1 },
+    { key: 'b', label: 'b', min: 0.1, max: 5, step: 0.1 },
+    { key: 'h', label: 'h', min: -10, max: 10, step: 0.5 },
+    { key: 'k', label: 'k', min: -10, max: 10, step: 0.5 }
+  ]
+};
+
+const state = JSON.parse(JSON.stringify(DEFAULTS));
+const views = JSON.parse(JSON.stringify(DEFAULT_VIEWS));
+
+/* =========================================================
+   DIBUJO EN CANVAS
+   ========================================================= */
+function niceStep(raw) {
+  if (!(raw > 0) || !Number.isFinite(raw)) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const n = raw / p;
+  let s;
+  if (n <= 1) s = 1;
+  else if (n <= 2) s = 2;
+  else if (n <= 5) s = 5;
+  else s = 10;
+  return s * p;
+}
+
+function drawPlot(canvas, view, f, opts = {}) {
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  const W = Math.round(rect.width);
+  const H = Math.round(rect.height);
+  if (W < 20 || H < 20) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+
+  const cs = getComputedStyle(document.documentElement);
+  const col = name => cs.getPropertyValue(name).trim();
+
+  const { xMin, xMax, yMin, yMax } = view;
+  const X = x => (x - xMin) / (xMax - xMin) * W;
+  const Y = y => H - (y - yMin) / (yMax - yMin) * H;
+
+  /* ---- Cuadrícula ---- */
+  const stepX = niceStep((xMax - xMin) / 10);
+  const stepY = niceStep((yMax - yMin) / 8);
+  ctx.strokeStyle = col('--grid');
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  if (Number.isFinite(stepX) && stepX > 0) {
+    for (let i = Math.ceil(xMin / stepX); i * stepX <= xMax; i++) {
+      const px = Math.round(X(i * stepX)) + 0.5;
+      if (px < -1 || px > W + 1) continue;
+      ctx.moveTo(px, 0); ctx.lineTo(px, H);
+    }
+  }
+  if (Number.isFinite(stepY) && stepY > 0) {
+    for (let j = Math.ceil(yMin / stepY); j * stepY <= yMax; j++) {
+      const py = Math.round(Y(j * stepY)) + 0.5;
+      if (py < -1 || py > H + 1) continue;
+      ctx.moveTo(0, py); ctx.lineTo(W, py);
+    }
+  }
+  ctx.stroke();
+
+  /* ---- Ejes ---- */
+  const axisYpx = Math.min(Math.max(Y(0), 16), H - 16);
+  const axisXpx = Math.min(Math.max(X(0), 24), W - 24);
+
+  ctx.strokeStyle = col('--axis');
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  if (yMin <= 0 && yMax >= 0) { ctx.moveTo(0, Math.round(Y(0)) + .5); ctx.lineTo(W, Math.round(Y(0)) + .5); }
+  if (xMin <= 0 && xMax >= 0) { ctx.moveTo(Math.round(X(0)) + .5, 0); ctx.lineTo(Math.round(X(0)) + .5, H); }
+  ctx.stroke();
+
+  /* ---- Etiquetas numéricas ---- */
+  ctx.fillStyle = col('--muted');
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  if (Number.isFinite(stepX) && stepX > 0 && (xMax - xMin) / stepX <= 30) {
+    for (let i = Math.ceil(xMin / stepX); i * stepX <= xMax; i++) {
+      const v = i * stepX;
+      if (Math.abs(v) < EPS) continue;
+      const px = X(v);
+      if (px < 12 || px > W - 12) continue;
+      ctx.fillText(fmt(v), px, axisYpx + 4);
+    }
+  }
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  if (Number.isFinite(stepY) && stepY > 0 && (yMax - yMin) / stepY <= 24) {
+    for (let j = Math.ceil(yMin / stepY); j * stepY <= yMax; j++) {
+      const v = j * stepY;
+      if (Math.abs(v) < EPS) continue;
+      const py = Y(v);
+      if (py < 10 || py > H - 10) continue;
+      ctx.fillText(fmt(v), axisXpx - 6, py);
+    }
+  }
+
+  /* ---- Asíntotas ---- */
+  (opts.asymptotes || []).forEach(a => {
+    ctx.save();
+    ctx.setLineDash([7, 6]);
+    ctx.strokeStyle = col('--asym');
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    if (a.type === 'h') {
+      const py = Y(a.value);
+      if (py >= -50 && py <= H + 50) { ctx.moveTo(0, py); ctx.lineTo(W, py); }
+    } else {
+      const px = X(a.value);
+      if (px >= -50 && px <= W + 50) { ctx.moveTo(px, 0); ctx.lineTo(px, H); }
+    }
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  /* ---- Curva ---- */
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0, 0, W, H);
+  ctx.clip();
+
+  ctx.strokeStyle = col('--curve');
+  ctx.lineWidth = 2.8;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+
+  const N = Math.max(900, W * 2);
+  let pen = false;
+  for (let i = 0; i <= N; i++) {
+    const x = xMin + (xMax - xMin) * i / N;
+    let y;
+    try { y = f(x); } catch (e) { y = NaN; }
+    if (!Number.isFinite(y)) { pen = false; continue; }
+    const px = X(x);
+    let py = Y(y);
+    if (!Number.isFinite(py)) { pen = false; continue; }
+    py = Math.max(-1e5, Math.min(1e5 + H, py));
+    if (!pen) { ctx.moveTo(px, py); pen = true; }
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  /* ---- Puntos clave ---- */
+  (opts.points || []).forEach(p => {
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
+    if (p.x < xMin - 0.001 || p.x > xMax + 0.001) return;
+    if (p.y < yMin - 0.001 || p.y > yMax + 0.001) return;
+    const px = X(p.x), py = Y(p.y);
+
+    ctx.beginPath();
+    ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = col('--pt');
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = col('--panel');
+    ctx.stroke();
+
+    if (p.label) {
+      ctx.font = '700 11.5px system-ui, sans-serif';
+      ctx.fillStyle = col('--pt');
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(p.label, px + 9, py - 6);
+    }
+  });
+}
+
+/* =========================================================
+   FÓRMULAS EN TEXTO
+   ========================================================= */
+function quadFormula(p) {
+  const t = (coef, varPart, first) => {
+    if (Math.abs(coef) < 1e-9) return '';
+    const abs = Math.abs(coef);
+    const sign = first ? (coef < 0 ? '−' : '') : (coef < 0 ? ' − ' : ' + ');
+    let num = '';
+    if (!varPart) num = fmt(abs);
+    else if (Math.abs(abs - 1) < 1e-9) num = '';
+    else num = fmt(abs);
+    return sign + num + varPart;
+  };
+  let s = t(p.a, 'x²', true) + t(p.b, 'x', false) + t(p.c, '', false);
+  if (!s) s = '0';
+  return `f(x) = ${s}`;
+}
+
+function expFormula(p) {
+  const base = `${fmt(p.b)}<sup>x</sup>`;
+  let core;
+  if (Math.abs(p.a - 1) < 1e-9) core = base;
+  else if (Math.abs(p.a + 1) < 1e-9) core = '−' + base;
+  else core = `${fmt(p.a)} · ${base}`;
+  let tail = '';
+  if (Math.abs(p.c) > 1e-9) tail = p.c > 0 ? ` + ${fmt(p.c)}` : ` − ${fmt(Math.abs(p.c))}`;
+  return `f(x) = ${core}${tail}`;
+}
+
+function logFormula(p) {
+  let arg = 'x';
+  if (Math.abs(p.h) > 1e-9) arg = p.h > 0 ? `x − ${fmt(p.h)}` : `x + ${fmt(Math.abs(p.h))}`;
+  let core = `log<sub>${fmt(p.b)}</sub>(${arg})`;
+  if (Math.abs(p.a + 1) < 1e-9) core = '−' + core;
+  else if (Math.abs(p.a - 1) >= 1e-9) core = `${fmt(p.a)} · ${core}`;
+  let tail = '';
+  if (Math.abs(p.k) > 1e-9) tail = p.k > 0 ? ` + ${fmt(p.k)}` : ` − ${fmt(Math.abs(p.k))}`;
+  return `f(x) = ${core}${tail}`;
+}
+
+/* =========================================================
+   PASO A PASO
+   ========================================================= */
+const stepHTML = (title, body, warn) =>
+  `<div class="step${warn ? ' warn' : ''}"><h3>${title}</h3><div class="step-body">${body}</div></div>`;
+
+/* ---------- Cuadrática ---------- */
+function quadSteps(p) {
+  const { a, b, c } = p;
+  const out = [];
+  out.push(stepHTML('1 · Coeficientes',
+    `a = <b>${fmt(a)}</b> &nbsp;·&nbsp; b = <b>${fmt(b)}</b> &nbsp;·&nbsp; c = <b>${fmt(c)}</b>`));
+
+  if (Math.abs(a) < 1e-9) {
+    out.push(stepHTML('2 · ¡Atención!',
+      `Si <b>a = 0</b> la función deja de ser cuadrática y se convierte en una <b>recta</b>:
+       f(x) = ${fmt(b)}x ${c >= 0 ? '+ ' + fmt(c) : '− ' + fmt(Math.abs(c))}.`, true));
+    return out.join('');
+  }
+
+  out.push(stepHTML('2 · Concavidad',
+    a > 0
+      ? `Como a = ${fmt(a)} &gt; 0, la parábola abre hacia <b>arriba</b> (∪) y el vértice es un <b>mínimo</b>.`
+      : `Como a = ${fmt(a)} &lt; 0, la parábola abre hacia <b>abajo</b> (∩) y el vértice es un <b>máximo</b>.`));
+
+  const xv = -b / (2 * a);
+  const yv = a * xv * xv + b * xv + c;
+
+  out.push(stepHTML('3 · Eje de simetría',
+    `x = −b / (2a) = −(${fmt(b)}) / (2 · ${fmt(a)}) = <b>${fmt(xv)}</b>`));
+
+  out.push(stepHTML('4 · Vértice',
+    `x<sub>v</sub> = <b>${fmt(xv)}</b><br>
+     y<sub>v</sub> = f(${fmt(xv)}) = <b>${fmt(yv)}</b><br>
+     V = (<b>${fmt(xv)}</b>, <b>${fmt(yv)}</b>)`));
+
+  const disc = b * b - 4 * a * c;
+  out.push(stepHTML('5 · Discriminante',
+    `Δ = b² − 4ac = (${fmt(b)})² − 4·(${fmt(a)})·(${fmt(c)})<br>
+     Δ = ${fmt(b * b)} − ${fmt(4 * a * c)} = <b>${fmt(disc)}</b>`));
+
+  let x1 = null, x2 = null;
+  if (disc > EPS) {
+    const r = Math.sqrt(disc);
+    x1 = (-b + r) / (2 * a);
+    x2 = (-b - r) / (2 * a);
+    out.push(stepHTML('6 · Raíces',
+      `Δ &gt; 0 → hay <b>dos raíces reales distintas</b>.<br>
+       x = (−b ± √Δ) / (2a) = (${fmt(-b)} ± ${fmt(r)}) / ${fmt(2 * a)}<br>
+       x₁ = <b>${fmt(x1)}</b> &nbsp;&nbsp; x₂ = <b>${fmt(x2)}</b><br>
+       Cortes con el eje x: (${fmt(x1)}, 0) y (${fmt(x2)}, 0)`));
+  } else if (Math.abs(disc) <= EPS) {
+    x1 = x2 = -b / (2 * a);
+    out.push(stepHTML('6 · Raíz doble',
+      `Δ = 0 → hay <b>una única raíz real</b> (doble).<br>
+       x = −b / (2a) = <b>${fmt(x1)}</b><br>
+       La parábola es <b>tangente</b> al eje x en (${fmt(x1)}, 0).`));
+  } else {
+    out.push(stepHTML('6 · Raíces',
+      `Δ &lt; 0 → <b>no hay raíces reales</b>. La parábola <b>no corta</b> el eje x.`));
+  }
+
+  out.push(stepHTML('7 · Corte con el eje y',
+    `f(0) = c = <b>${fmt(c)}</b> → punto (0, ${fmt(c)})`));
+
+  if (x1 !== null && x2 !== null) {
+    const f1 = Math.abs(x1) < EPS ? 'x' : `(x − ${fmt(x1)})`;
+    const f2 = Math.abs(x2) < EPS ? 'x' : `(x − ${fmt(x2)})`;
+    const lead = Math.abs(Math.abs(a) - 1) < EPS ? (a < 0 ? '−' : '') : fmt(a);
+    out.push(stepHTML('8 · Forma factorizada',
+      `f(x) = a(x − x₁)(x − x₂)<br>
+       f(x) = <b>${lead}${f1}${f2}</b>`));
+  }
+
+  return out.join('');
+}
+
+/* ---------- Exponencial ---------- */
+function expSteps(p) {
+  const { a, b, c } = p;
+  const out = [];
+  out.push(stepHTML('1 · Parámetros',
+    `f(x) = a · b<sup>x</sup> + c<br>
+     a = <b>${fmt(a)}</b> &nbsp;·&nbsp; b = <b>${fmt(b)}</b> &nbsp;·&nbsp; c = <b>${fmt(c)}</b>`));
+
+  out.push(stepHTML('2 · Dominio',
+    `Dom f = <b>ℝ</b> (todos los reales), porque b<sup>x</sup> está definida para cualquier x.`));
+
+  out.push(stepHTML('3 · Asíntota horizontal',
+    `La asíntota es <b>y = c = ${fmt(c)}</b>. La curva se le acerca pero nunca la toca.`));
+
+  out.push(stepHTML('4 · Imagen (rango)',
+    a > 0
+      ? `Como a = ${fmt(a)} &gt; 0, se cumple f(x) &gt; ${fmt(c)} → Im f = (<b>${fmt(c)}</b>, +∞)`
+      : a < 0
+        ? `Como a = ${fmt(a)} &lt; 0, se cumple f(x) &lt; ${fmt(c)} → Im f = (−∞, <b>${fmt(c)}</b>)`
+        : `Como a = 0, la función es constante: f(x) = ${fmt(c)}.`));
+
+  out.push(stepHTML('5 · Corte con el eje y',
+    `f(0) = ${fmt(a)} · ${fmt(b)}⁰ + ${fmt(c)} = ${fmt(a)} · 1 + ${fmt(c)} = <b>${fmt(a + c)}</b><br>
+     Punto: (0, ${fmt(a + c)})`));
+
+  const increasing = (a > 0) === (b > 1);
+  if (Math.abs(b - 1) < EPS) {
+    out.push(stepHTML('6 · Monotonía',
+      `b = 1 → la función es <b>constante</b>: f(x) = ${fmt(a + c)}.`, true));
+  } else {
+    out.push(stepHTML('6 · Crecimiento / decrecimiento',
+      `b = ${fmt(b)} ${b > 1 ? '&gt; 1' : '&lt; 1'} → la base produce
+       <b>${b > 1 ? 'crecimiento' : 'decaimiento'} exponencial</b>.<br>
+       Multiplicando por a = ${fmt(a)}, la función es
+       <b>${increasing ? 'creciente' : 'decreciente'}</b> en todo ℝ.`));
+  }
+
+  const target = -c / a;
+  if (Math.abs(a) < EPS) {
+    out.push(stepHTML('7 · Ceros',
+      `Con a = 0 no hay ecuación que resolver: f(x) = ${fmt(c)}.`, true));
+  } else if (target > 0) {
+    const x0 = Math.log(target) / Math.log(b);
+    out.push(stepHTML('7 · Cero de la función',
+      `a · b<sup>x</sup> + c = 0<br>
+       ${fmt(a)} · b<sup>x</sup> = ${fmt(-c)}<br>
+       b<sup>x</sup> = ${fmt(target)}<br>
+       x = log<sub>${fmt(b)}</sub>(${fmt(target)}) = <b>${fmt(x0)}</b><br>
+       Corte con el eje x: (${fmt(x0)}, 0)`));
+  } else {
+    out.push(stepHTML('7 · Ceros',
+      `−c/a = ${fmt(target)} ≤ 0, pero b<sup>x</sup> es <b>siempre positivo</b>.<br>
+       Por lo tanto <b>no hay ceros</b>: la gráfica nunca corta el eje x.`));
+  }
+
+  return out.join('');
+}
+
+/* ---------- Logarítmica ---------- */
+function logSteps(p) {
+  const { a, b, h, k } = p;
+  const out = [];
+  out.push(stepHTML('1 · Parámetros',
+    `f(x) = a · log<sub>b</sub>(x − h) + k<br>
+     a = <b>${fmt(a)}</b> · b = <b>${fmt(b)}</b> · h = <b>${fmt(h)}</b> · k = <b>${fmt(k)}</b>`));
+
+  out.push(stepHTML('2 · Dominio',
+    `El argumento del logaritmo debe ser positivo:<br>
+     x − (${fmt(h)}) &gt; 0 &nbsp;→&nbsp; x &gt; ${fmt(h)}<br>
+     Dom f = (<b>${fmt(h)}</b>, +∞)`));
+
+  out.push(stepHTML('3 · Asíntota vertical',
+    `x = <b>${fmt(h)}</b> (la curva se le acerca sin tocarla).`));
+
+  out.push(stepHTML('4 · Imagen (rango)',
+    `Im f = <b>ℝ</b>. El logaritmo puede tomar cualquier valor real.`));
+
+  if (Math.abs(a) < EPS) {
+    out.push(stepHTML('5 · ¡Atención!',
+      `Con a = 0 la función es constante: f(x) = ${fmt(k)}.`, true));
+  } else {
+    const expo = -k / a;
+    const arg = Math.pow(b, expo);
+    const x0 = h + arg;
+    out.push(stepHTML('5 · Corte con el eje x',
+      `a · log<sub>b</sub>(x − h) + k = 0<br>
+       log<sub>${fmt(b)}</sub>(x − ${fmt(h)}) = ${fmt(expo)}<br>
+       x − ${fmt(h)} = ${fmt(b)}<sup>${fmt(expo)}</sup> = ${fmt(arg)}<br>
+       x = <b>${fmt(x0)}</b><br>
+       Corte con el eje x: (${fmt(x0)}, 0)`));
+  }
+
+  if (h < -EPS) {
+    const y0 = a * Math.log(-h) / Math.log(b) + k;
+    out.push(stepHTML('6 · Corte con el eje y',
+      `x = 0 sí pertenece al dominio porque 0 &gt; ${fmt(h)}.<br>
+       f(0) = ${fmt(a)} · log<sub>${fmt(b)}</sub>(0 − (${fmt(h)})) + ${fmt(k)}<br>
+       f(0) = ${fmt(a)} · log<sub>${fmt(b)}</sub>(${fmt(-h)}) + ${fmt(k)} = <b>${fmt(y0)}</b>`));
+  } else {
+    out.push(stepHTML('6 · Corte con el eje y',
+      `x = 0 <b>no</b> pertenece al dominio (0 ≤ ${fmt(h)}), así que la gráfica
+       <b>no corta</b> el eje y.`));
+  }
+
+  if (Math.abs(a) > EPS) {
+    const increasing = (a > 0) === (b > 1);
+    out.push(stepHTML('7 · Monotonía',
+      `La base b = ${fmt(b)} hace que log<sub>b</sub>(x) sea
+       ${b > 1 ? 'creciente' : 'decreciente'}.<br>
+       Con a = ${fmt(a)}, la función es <b>${increasing ? 'creciente' : 'decreciente'}</b>
+       en todo su dominio.`));
+  }
+
+  return out.join('');
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const CANVAS = {
+  quad: document.getElementById('canvas-quad'),
+  exp:  document.getElementById('canvas-exp'),
+  log:  document.getElementById('canvas-log')
+};
+
+function renderQuad() {
+  const p = state.quad;
+  const f = x => p.a * x * x + p.b * x + p.c;
+  const pts = [];
+  const disc = p.b * p.b - 4 * p.a * p.c;
+
+  if (Math.abs(p.a) > EPS) {
+    const xv = -p.b / (2 * p.a);
+    pts.push({ x: xv, y: f(xv), label: 'V' });
+    if (disc >= 0) {
+      const r = Math.sqrt(disc);
+      pts.push({ x: (-p.b + r) / (2 * p.a), y: 0, label: 'x₁' });
+      pts.push({ x: (-p.b - r) / (2 * p.a), y: 0, label: 'x₂' });
+    }
+  }
+  pts.push({ x: 0, y: p.c, label: 'c' });
+
+  drawPlot(CANVAS.quad, views.quad, f, { points: pts });
+
+  document.getElementById('quadFormula').innerHTML = quadFormula(p);
+  document.getElementById('quadSteps').innerHTML = quadSteps(p);
+}
+
+function renderExp() {
+  const p = state.exp;
+  const f = x => p.a * Math.pow(p.b, x) + p.c;
+  const pts = [{ x: 0, y: p.a + p.c, label: 'y' }];
+
+  if (Math.abs(p.a) > EPS) {
+    const target = -p.c / p.a;
+    if (target > 0) pts.push({ x: Math.log(target) / Math.log(p.b), y: 0, label: 'cero' });
+  }
+
+  drawPlot(CANVAS.exp, views.exp, f, {
+    points: pts,
+    asymptotes: [{ type: 'h', value: p.c }]
+  });
+
+  document.getElementById('expFormula').innerHTML = expFormula(p);
+  document.getElementById('expSteps').innerHTML = expSteps(p);
+}
+
+function renderLog() {
+  const p = state.log;
+  const f = x => (x - p.h > 0) ? p.a * Math.log(x - p.h) / Math.log(p.b) + p.k : NaN;
+  const pts = [];
+
+  if (Math.abs(p.a) > EPS) {
+    const x0 = p.h + Math.pow(p.b, -p.k / p.a);
+    pts.push({ x: x0, y: 0, label: 'cero' });
+  }
+  if (p.h < -EPS) {
+    pts.push({ x: 0, y: p.a * Math.log(-p.h) / Math.log(p.b) + p.k, label: 'y' });
+  }
+
+  drawPlot(CANVAS.log, views.log, f, {
+    points: pts,
+    asymptotes: [{ type: 'v', value: p.h }]
+  });
+
+  document.getElementById('logFormula').innerHTML = logFormula(p);
+  document.getElementById('logSteps').innerHTML = logSteps(p);
+}
+
+const RENDERERS = { quad: renderQuad, exp: renderExp, log: renderLog };
+
+let activeTab = 'quad';
+
+function render(tab = activeTab) {
+  RENDERERS[tab]();
+}
+
+/* =========================================================
+   SLIDERS
+   ========================================================= */
+function buildSliders(tab) {
+  const container = document.getElementById(tab + 'Sliders');
+  container.innerHTML = '';
+  SLIDERS[tab].forEach(def => {
+    const row = document.createElement('div');
+    row.className = 'slider-row';
+
+    const labelRow = document.createElement('div');
+    labelRow.className = 'slider-label';
+    const name = document.createElement('span');
+    name.className = 'pname';
+    name.innerHTML = def.label;
+    const out = document.createElement('span');
+    out.className = 'pval';
+    out.textContent = fmt(state[tab][def.key]);
+    labelRow.appendChild(name);
+    labelRow.appendChild(out);
+
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = def.min;
+    input.max = def.max;
+    input.step = def.step;
+    input.value = state[tab][def.key];
+
+    input.addEventListener('input', () => {
+      state[tab][def.key] = parseFloat(input.value);
+      out.textContent = fmt(state[tab][def.key]);
+      render(tab);
+    });
+
+    row.appendChild(labelRow);
+    row.appendChild(input);
+    container.appendChild(row);
+  });
+}
+
+/* =========================================================
+   INTERACCIÓN DEL CANVAS (zoom + pan)
+   ========================================================= */
+function attachInteractions(canvas, tab) {
+  let dragging = false, lastX = 0, lastY = 0;
+
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const fx = mx / rect.width;
+    const fy = 1 - my / rect.height;
+
+    const v = views[tab];
+    const cx = v.xMin + fx * (v.xMax - v.xMin);
+    const cy = v.yMin + fy * (v.yMax - v.yMin);
+    const k = e.deltaY > 0 ? 1.12 : 1 / 1.12;
+
+    v.xMin = cx + (v.xMin - cx) * k;
+    v.xMax = cx + (v.xMax - cx) * k;
+    v.yMin = cy + (v.yMin - cy) * k;
+    v.yMax = cy + (v.yMax - cy) * k;
+
+    render(tab);
+  }, { passive: false });
+
+  canvas.addEventListener('pointerdown', e => {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+
+  canvas.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    const v = views[tab];
+    const dx = (e.clientX - lastX) / rect.width * (v.xMax - v.xMin);
+    const dy = (e.clientY - lastY) / rect.height * (v.yMax - v.yMin);
+    v.xMin -= dx; v.xMax -= dx;
+    v.yMin += dy; v.yMax += dy;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    render(tab);
+  });
+
+  const stop = e => {
+    dragging = false;
+    try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointercancel', stop);
+}
+
+/* =========================================================
+   PESTAÑAS
+   ========================================================= */
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    if (tab === activeTab) return;
+
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'panel-' + tab);
+    });
+    activeTab = tab;
+
+    requestAnimationFrame(() => render(tab));
+  });
+});
+
+/* =========================================================
+   BOTONES DE REINICIO
+   ========================================================= */
+document.querySelectorAll('[data-reset]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.reset;
+    Object.assign(state[tab], DEFAULTS[tab]);
+    Object.assign(views[tab], DEFAULT_VIEWS[tab]);
+
+    // Refrescar sliders
+    const container = document.getElementById(tab + 'Sliders');
+    container.querySelectorAll('.slider-row').forEach((row, i) => {
+      const def = SLIDERS[tab][i];
+      row.querySelector('input').value = state[tab][def.key];
+      row.querySelector('.pval').textContent = fmt(state[tab][def.key]);
+    });
+
+    render(tab);
+  });
+});
+
+/* =========================================================
+   TEMA CLARO / OSCURO
+   ========================================================= */
+const themeToggle = document.getElementById('themeToggle');
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  try { localStorage.setItem('func-theme', theme); } catch (_) {}
+  requestAnimationFrame(() => render());
+}
+
+themeToggle.addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  setTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+(function initTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem('func-theme'); } catch (_) {}
+  setTheme(saved === 'dark' ? 'dark' : 'light');
+})();
+
+/* =========================================================
+   ARRANQUE
+   ========================================================= */
+['quad', 'exp', 'log'].forEach(tab => {
+  buildSliders(tab);
+  attachInteractions(CANVAS[tab], tab);
+});
+
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => render(), 80);
+});
+
+requestAnimationFrame(() => {
+  render('quad');
+  // Pre-render de las otras pestañas por si el contenedor ya tiene tamaño
+  setTimeout(() => { render('exp'); render('log'); render(activeTab); }, 100);
+});
+</script>
+</body>
+</html>
